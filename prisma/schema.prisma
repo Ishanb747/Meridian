@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         Role        @default(EMPLOYEE)
+  department   String?
+  managerId    String?
+  manager      User?       @relation("Reports", fields: [managerId], references: [id])
+  reports      User[]      @relation("Reports")
+  avatarUrl    String?
+  deletedAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  auditLogs    AuditLog[]
+  goals        Goal[]      @relation("EmployeeGoals")
+  managedGoals Goal[]     @relation("ManagerGoals")
+  approvals    GoalApproval[]
+  sharedGoalAssignments SharedGoalAssignment[] @relation("RecipientGoals")
+  managerCheckins       CheckinSession[]       @relation("ManagerCheckins")
+  employeeCheckins      CheckinSession[]       @relation("EmployeeCheckins")
+  exemptions            ExemptionRecord[]      @relation("EmployeeExemptions")
+  grantedExemptions     ExemptionRecord[]      @relation("ExemptionGranter")
+  escalationTargets     EscalationLog[]        @relation("EscalationTarget")
+  notifications         NotificationLog[]      @relation("NotificationRecipient")
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  ADMIN
+}
+
+model Cycle {
+  id              String      @id @default(cuid())
+  name            String
+  year            Int
+  currentPhase    CyclePhase  @default(GOAL_SETTING)
+  goalSettingOpen DateTime
+  q1Open          DateTime
+  q2Open          DateTime
+  q3Open          DateTime
+  q4Open          DateTime
+  isActive        Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+
+  goals           Goal[]
+}
+
+enum CyclePhase {
+  GOAL_SETTING
+  Q1_CHECKIN
+  Q2_CHECKIN
+  Q3_CHECKIN
+  Q4_ANNUAL
+  CLOSED
+}
+
+model ThrustArea {
+  id    String  @id @default(cuid())
+  name  String  @unique
+  color String
+  goals Goal[]
+}
+
+model Goal {
+  id                String       @id @default(cuid())
+  employeeId        String
+  employee          User          @relation("EmployeeGoals", fields: [employeeId], references: [id])
+  managerId         String?
+  manager           User?         @relation("ManagerGoals", fields: [managerId], references: [id])
+  cycleId           String
+  cycle             Cycle         @relation(fields: [cycleId], references: [id])
+  title             String
+  description       String?
+  thrustAreaId      String
+  thrustArea        ThrustArea    @relation(fields: [thrustAreaId], references: [id])
+  uomType           UomType
+  targetValue       Float?
+  targetDate        DateTime?
+  weightage         Float
+  status            GoalStatus    @default(DRAFT)
+  isSharedGoal      Boolean       @default(false)
+  sharedFromGoalId  String?
+  sharedFromGoal    Goal?         @relation("SharedGoals", fields: [sharedFromGoalId], references: [id])
+  sharedInstances   Goal[]       @relation("SharedGoals")
+  lockedAt          DateTime?
+  lockedBy          String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  approvals         GoalApproval[]
+  achievements      Achievement[]
+}
+
+enum UomType {
+  MIN_NUMERIC
+  MAX_NUMERIC
+  MIN_PERCENT
+  MAX_PERCENT
+  TIMELINE
+  ZERO
+}
+
+enum GoalStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  LOCKED
+  RETURNED
+}
+
+model GoalApproval {
+  id         String         @id @default(cuid())
+  goalId     String
+  goal       Goal           @relation(fields: [goalId], references: [id])
+  managerId  String
+  manager    User           @relation(fields: [managerId], references: [id])
+  action     ApprovalAction
+  comment    String?
+  actedAt    DateTime       @default(now())
+}
+
+enum ApprovalAction {
+  APPROVED
+  RETURNED
+  EDITED
+}
+
+model SharedGoalAssignment {
+  id               String   @id @default(cuid())
+  sourceGoalId     String
+  recipientId      String
+  recipient        User     @relation("RecipientGoals", fields: [recipientId], references: [id])
+  customWeightage  Float
+  assignedById     String
+  assignedAt       DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  entityType String
+  entityId   String
+  action     String
+  oldValue   Json?
+  newValue   Json?
+  reason     String?
+  isPostLock Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Achievement {
+  id            String   @id @default(cuid())
+  goalId        String
+  goal          Goal     @relation(fields: [goalId], references: [id])
+  cycleId       String
+  quarter       Quarter
+  actualValue   Float?   
+  actualDate    DateTime? 
+  status        GoalProgressStatus @default(NOT_STARTED)
+  computedScore Float?   
+  notes         String?  
+  loggedBy      String   
+  loggedAt      DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([goalId, quarter])
+}
+
+enum Quarter {
+  Q1
+  Q2
+  Q3
+  Q4
+}
+
+enum GoalProgressStatus {
+  NOT_STARTED
+  ON_TRACK
+  COMPLETED
+}
+
+model CheckinSession {
+  id          String   @id @default(cuid())
+  managerId   String
+  manager     User     @relation("ManagerCheckins", fields: [managerId], references: [id])
+  employeeId  String
+  employee    User     @relation("EmployeeCheckins", fields: [employeeId], references: [id])
+  cycleId     String
+  quarter     Quarter
+  comment     String   
+  completedAt DateTime @default(now())
+
+  @@unique([managerId, employeeId, cycleId, quarter])
+}
+
+model ExemptionRecord {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    User     @relation("EmployeeExemptions", fields: [employeeId], references: [id])
+  cycleId     String
+  quarter     Quarter?   // null = exempt for entire cycle
+  reason      String
+  grantedById String
+  grantedBy   User     @relation("ExemptionGranter", fields: [grantedById], references: [id])
+  grantedAt   DateTime @default(now())
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PHASE 5 — Escalations, Notifications
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+model EscalationRule {
+  id             String          @id @default(cuid())
+  name           String
+  ruleType       EscalationType
+  thresholdDays  Int
+  repeatDays     Int             @default(3)
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  logs           EscalationLog[]
+}
+
+enum EscalationType {
+  GOAL_SUBMISSION_OVERDUE
+  MANAGER_APPROVAL_OVERDUE
+  CHECKIN_MISSING
+  MANAGER_CHECKIN_MISSING
+}
+
+model EscalationLog {
+  id              String         @id @default(cuid())
+  ruleId          String
+  rule            EscalationRule @relation(fields: [ruleId], references: [id])
+  targetUserId    String
+  targetUser      User           @relation("EscalationTarget", fields: [targetUserId], references: [id])
+  notifiedChain   Json
+  level           Int
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  triggeredAt     DateTime       @default(now())
+}
+
+model NotificationLog {
+  id          String             @id @default(cuid())
+  recipientId String
+  recipient   User               @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  channel     NotificationChannel
+  template    String
+  subject     String?
+  body        String
+  status      NotificationStatus @default(PENDING)
+  sentAt      DateTime?
+  error       String?
+  createdAt   DateTime           @default(now())
+}
+
+enum NotificationChannel {
+  EMAIL
+  TEAMS
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
