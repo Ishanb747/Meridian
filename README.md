@@ -82,6 +82,11 @@ Meridian is broken down into five major feature domains, all fully implemented a
   - **QoQ Trend Chart:** Multi-line Recharts graph visualizing the trajectory of average goal achievement scores over the four quarters.
   - **Goal Distributions:** Donut and bar charts providing breakdowns of goals by Thrust Area and current Status.
 
+### 6. Automated Escalation & Notification Engine (Phase 5)
+- **Multi-Level Escalations:** Automatically flags overdue check-ins and routes reminders through a three-tier chain (Level 1: Employee, Level 2: Skip-level Manager, Level 3: HR Escalation).
+- **Multichannel Notifications:** Custom messaging service supporting branded, mobile-responsive HTML emails and rich Microsoft Teams Adaptive Cards.
+- **Admin Controls:** Comprehensive rule builder to modify notification threshold days and a system-wide log to audit notification statuses (Sent, Pending, Failed) with manual resend overrides.
+
 ---
 
 ## 🏗 System Architecture
