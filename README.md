@@ -94,54 +94,112 @@ Meridian is broken down into five major feature domains, all fully implemented a
 The application is built on a full-stack Next.js architecture using the App Router, integrating a robust PostgreSQL database via Prisma ORM for type-safe data access.
 
 ```mermaid
-graph TD
-    %% Styling
-    classDef client fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px,color:#0f172a
-    classDef server fill:#eff6ff,stroke:#93c5fd,stroke-width:2px,color:#1e3a8a
-    classDef db fill:#f0fdf4,stroke:#86efac,stroke-width:2px,color:#166534
-    classDef external fill:#fefce8,stroke:#fde047,stroke-width:2px,color:#854d0e
+flowchart TB
+    %% Styling and Palettes
+    classDef roles fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,color:#0f172a,stroke-dasharray: 3 3
+    classDef client fill:#f0fdf4,stroke:#4ade80,stroke-width:2px,color:#14532d
+    classDef security fill:#fff1f2,stroke:#f43f5e,stroke-width:2px,color:#9f1239
+    classDef server fill:#eff6ff,stroke:#60a5fa,stroke-width:2px,color:#1e3a8a
+    classDef logic fill:#faf5ff,stroke:#c084fc,stroke-width:2px,color:#581c87
+    classDef database fill:#fffbeb,stroke:#fbbf24,stroke-width:2px,color:#78350f
+    classDef external fill:#fefce8,stroke:#eab308,stroke-width:2px,color:#854d0e
 
-    %% Client Layer
-    subgraph Client Layer [Frontend / UI]
-        direction TB
-        UI[React Components <br/> <i>shadcn/ui + TailwindCSS</i>]:::client
-        State[State Management <br/> <i>React Hooks + Context</i>]:::client
-        Charts[Analytics & Charts <br/> <i>Recharts + SVG Heatmaps</i>]:::client
-        UI --> State
-        UI --> Charts
+    %% User Roles & Interaction Entry Points
+    subgraph Roles [Target Personas]
+        AdminRole[Admin<br/><i>System Config & Audits</i>]:::roles
+        ManagerRole[Manager<br/><i>Goal Cascades & Reviews</i>]:::roles
+        EmployeeRole[Employee<br/><i>Self Goal Setting & Progress</i>]:::roles
     end
 
-    %% Server Layer
-    subgraph Server Layer [Next.js App Router]
+    %% Client Frontend Layer (React / Next.js Client Components)
+    subgraph Client [Frontend / UI Layer]
         direction TB
-        Auth[Authentication <br/> <i>NextAuth.js</i>]:::server
-        API[API Routes <br/> <i>/api/*</i>]:::server
-        Middleware[Edge Middleware <br/> <i>Role & Route Protection</i>]:::server
-        Logic[Business Logic <br/> <i>Goal Scoring & Escalations</i>]:::server
+        Pages[App Router Pages<br/><i>/dashboard · /analytics · /employee/goals</i>]:::client
+        SidebarNav[Motion Sidebar<br/><i>Framer Motion Responsive Layout</i>]:::client
+        Forms[Dynamic Forms<br/><i>Goal Drafting · Inline Score Validations</i>]:::client
+        Visuals[Analytics Visuals<br/><i>Recharts Trends · Custom SVG heatmaps</i>]:::client
         
-        Auth --> Middleware
-        Middleware --> API
-        API --> Logic
+        Pages --> SidebarNav
+        Pages --> Forms
+        Pages --> Visuals
     end
 
-    %% Database Layer
-    subgraph Data Layer [PostgreSQL + Prisma]
+    %% Edge Security & Session Middleware Layer
+    subgraph Security [Security & Routing Guard]
         direction TB
-        Prisma[Prisma Client <br/> <i>AsyncLocalStorage Middleware</i>]:::db
-        DB[(PostgreSQL)]:::db
+        NextAuth[NextAuth.js Provider<br/><i>Credentials & Azure AD Stubs</i>]:::security
+        JWTSession[Session JWT Verification<br/><i>Secure Role Extraction</i>]:::security
+        RouteGuard[Next.js Route Middleware<br/><i>Gated Pages & /api/* Protection</i>]:::security
         
-        Prisma --> DB
+        NextAuth --> JWTSession
+        JWTSession --> RouteGuard
     end
 
-    %% External
-    subgraph External [Services]
-        Cron[Cron Jobs / Scheduler]:::external
+    %% Server Application Layer (API Routing & Controller Logic)
+    subgraph Server [Backend Controller & API Layer]
+        direction TB
+        APIEndpoints[API Route Handlers<br/><i>/api/reports · /api/admin/* · /api/goals</i>]:::server
+        AuthHelper[getUser Helper<br/><i>Extracts role & session metadata</i>]:::server
+        
+        APIEndpoints --> AuthHelper
     end
 
-    %% Connections
-    UI -->|HTTP Requests| Middleware
-    Logic -->|CRUD & Auditing| Prisma
-    Cron -->|Triggers Escalations| API
+    %% System Business Core (Domain Calculation Logic)
+    subgraph Domain [Business Logic Engine]
+        direction TB
+        ScoringEngine[Goal Scoring Algorithm<br/><i>Linear Normalization Bounding</i>]:::logic
+        PhaseEngine[Cycle Validation Rules<br/><i>Enforces Time-boxed Open/Close Dates</i>]:::logic
+        ExemptionChecker[Exemption Evaluator<br/><i>Validates Leaves & Skips Reminders</i>]:::logic
+        EscalationController[Escalation Rules Engine<br/><i>Applies Timing Thresholds</i>]:::logic
+        NotificationDispatcher[Notification Manager<br/><i>EMAIL & TEAMS Routers</i>]:::logic
+        
+        ScoringEngine --> PhaseEngine
+        PhaseEngine --> ExemptionChecker
+        EscalationController --> NotificationDispatcher
+    end
+
+    %% Database Transaction, Middleware, & Context Propagation
+    subgraph Data [Data Persistence & Auditing Layer]
+        direction TB
+        ContextLocal[AsyncLocalStorage Context<br/><i>Propagates User ID through stack</i>]:::database
+        PrismaMiddle[Prisma Hooks & Middleware<br/><i>Intercepts post-lock writes to database</i>]:::database
+        AuditBuilder[Immutable Audit Engine<br/><i>Generates deep field-level logs & diffs</i>]:::database
+        Postgres[(Postgres DB Server<br/><i>Neon Serverless Cloud</i>)]:::database
+        
+        ContextLocal --> PrismaMiddle
+        PrismaMiddle --> AuditBuilder
+        AuditBuilder --> Postgres
+    end
+
+    %% External Orchestration & Integration
+    subgraph Integrations [External Ecosystem]
+        direction TB
+        SMTP[SMTP Mail Server<br/><i>Branded HTML Emails</i>]:::external
+        TeamsWebhooks[Microsoft Teams REST API<br/><i>Rich Adaptive Cards</i>]:::external
+        CronJob[Dynamic Cron Job<br/><i>Daily Trigger Event</i>]:::external
+    end
+
+    %% Connect User Roles to Client UI
+    AdminRole -.->|Admin dashboard| Pages
+    ManagerRole -.->|Team goals & reports| Pages
+    EmployeeRole -.->|Goal portal| Pages
+
+    %% Connect UI Interactions to Middleware
+    Visuals & Forms -->|HTTP REST Requests| NextAuth
+
+    %% Security Gated flow down to Controllers
+    RouteGuard -->|Authorized access| APIEndpoints
+
+    %% Connect Controllers to Logic Modules
+    APIEndpoints -->|Execute Calculations| Domain
+
+    %% Connect Calculations to DB layer with Context Propagation
+    Domain -->|Propagates Identity context| ContextLocal
+
+    %% External Connections
+    NotificationDispatcher -->|SMTP Protocol| SMTP
+    NotificationDispatcher -->|Webhook Payloads| TeamsWebhooks
+    CronJob -->|Periodic Daily ping| APIEndpoints
 ```
 
 ## 🛠 Getting Started
