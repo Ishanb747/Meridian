@@ -13,11 +13,11 @@ async function main() {
 
   // Create Admin User
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@atomquest.in' },
+    where: { email: 'admin@meridian.in' },
     update: {},
     create: {
       name: 'Admin User',
-      email: 'admin@atomquest.in',
+      email: 'admin@meridian.in',
       passwordHash: adminPassword,
       role: 'ADMIN',
       department: 'Administration',
@@ -27,11 +27,11 @@ async function main() {
 
   // Create Manager User
   const manager = await prisma.user.upsert({
-    where: { email: 'manager@atomquest.in' },
+    where: { email: 'manager@meridian.in' },
     update: {},
     create: {
       name: 'Manager One',
-      email: 'manager@atomquest.in',
+      email: 'manager@meridian.in',
       passwordHash: managerPassword,
       role: 'MANAGER',
       department: 'Engineering',
@@ -41,11 +41,11 @@ async function main() {
 
   // Create Employee Users
   const emp1 = await prisma.user.upsert({
-    where: { email: 'emp1@atomquest.in' },
+    where: { email: 'emp1@meridian.in' },
     update: {},
     create: {
       name: 'Employee One',
-      email: 'emp1@atomquest.in',
+      email: 'emp1@meridian.in',
       passwordHash: employeePassword,
       role: 'EMPLOYEE',
       department: 'Engineering',
@@ -55,11 +55,11 @@ async function main() {
   console.log('Created employee:', emp1.email)
 
   const emp2 = await prisma.user.upsert({
-    where: { email: 'emp2@atomquest.in' },
+    where: { email: 'emp2@meridian.in' },
     update: {},
     create: {
       name: 'Employee Two',
-      email: 'emp2@atomquest.in',
+      email: 'emp2@meridian.in',
       passwordHash: employeePassword,
       role: 'EMPLOYEE',
       department: 'Engineering',
@@ -69,11 +69,11 @@ async function main() {
   console.log('Created employee:', emp2.email)
 
   const emp3 = await prisma.user.upsert({
-    where: { email: 'emp3@atomquest.in' },
+    where: { email: 'emp3@meridian.in' },
     update: {},
     create: {
       name: 'Employee Three',
-      email: 'emp3@atomquest.in',
+      email: 'emp3@meridian.in',
       passwordHash: employeePassword,
       role: 'EMPLOYEE',
       department: 'Design',
