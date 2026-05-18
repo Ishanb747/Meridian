@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { FeatureDisabledBanner } from '@/components/ui/feature-disabled-banner'
-import { Mail, MessageSquare, AlertCircle, Send, Clock, XCircle, RefreshCw, Download, Settings } from 'lucide-react'
+import { Mail, MessageSquare, Send, Clock, XCircle, RefreshCw, Download, Settings } from 'lucide-react'
 
 interface NotificationLogEntry {
   id: string

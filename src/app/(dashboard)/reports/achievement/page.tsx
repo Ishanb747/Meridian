@@ -4,12 +4,11 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { formatScore } from '@/lib/scoring'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Search, Download, X, ChevronDown, ChevronUp,
-  ArrowUpDown, ArrowUp, ArrowDown, Filter
+  Search, Download, X,
+  ArrowUpDown, ArrowUp, ArrowDown
 } from 'lucide-react'
 
 interface AchievementRow {

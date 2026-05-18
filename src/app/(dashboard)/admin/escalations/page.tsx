@@ -1,16 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { FeatureDisabledBanner } from '@/components/ui/feature-disabled-banner'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  AlertCircle, Clock, CheckCircle, X, Search,
-  ChevronDown, ChevronRight, Users, Bell, Settings
-} from 'lucide-react'
+import { AlertCircle, X, Settings } from 'lucide-react'
 
 // Default escalation rules (seeded or from API)
 const DEFAULT_RULES = [
@@ -40,11 +36,11 @@ interface EscalationLog {
   triggeredAt: string
 }
 
-const LEVEL_CONFIG: Record<number, { label: string; variant: string; icon: typeof Bell }> = {
-  1: { label: 'Reminder', variant: 'default', icon: Bell },
-  2: { label: 'Skip-level', variant: 'warning', icon: AlertCircle },
-  3: { label: 'HR Escalation', variant: 'danger', icon: AlertCircle },
-}
+// const LEVEL_CONFIG = {
+//   1: { label: 'Reminder', variant: 'default', icon: Bell },
+//   2: { label: 'Skip-level', variant: 'warning', icon: AlertCircle },
+//   3: { label: 'HR Escalation', variant: 'danger', icon: AlertCircle },
+// }
 
 const RULE_DESCRIPTIONS: Record<string, string> = {
   GOAL_SUBMISSION_OVERDUE: 'Fires when an employee has not submitted goals within N days of the goal setting window opening.',
@@ -56,9 +52,8 @@ const RULE_DESCRIPTIONS: Record<string, string> = {
 export default function EscalationsPage() {
   const [activeTab, setActiveTab] = useState<'rules' | 'log'>('rules')
   const [rules, setRules] = useState<EscalationRule[]>(DEFAULT_RULES)
-  const [logs, setLogs] = useState<EscalationLog[]>([])
   const [editingRule, setEditingRule] = useState<EscalationRule | null>(null)
-  const [expandedLog, setExpandedLog] = useState<string | null>(null)
+  const [logs] = useState<EscalationLog[]>([])
   const [logFilter, setLogFilter] = useState<'active' | 'resolved'>('active')
 
   // Check feature flag from env (client-side via NEXT_PUBLIC_)
@@ -219,17 +214,17 @@ export default function EscalationsPage() {
         </div>
       )}
 
-      {/* Edit Rule Drawer */}
+      {/* Edit Rule Modal */}
       <AnimatePresence>
         {editingRule && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50" onClick={() => setEditingRule(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50" onClick={() => setEditingRule(null)} />
             <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed right-0 top-0 h-screen w-[440px] bg-bg-surface border-l border-border-subtle z-50 flex flex-col"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-md bg-bg-surface border border-border-subtle rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
             >
               <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
                 <h2 className="text-lg font-display font-semibold text-text-primary">Edit Rule</h2>
@@ -286,7 +281,7 @@ export default function EscalationsPage() {
                 </Button>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
     </div>

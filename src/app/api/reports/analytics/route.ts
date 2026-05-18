@@ -54,7 +54,13 @@ export async function GET(req: NextRequest) {
       goals.forEach(goal => {
         const ach = goal.achievements.find(a => a.quarter === q)
         if (ach && ach.actualValue !== null) {
-          const score = computeScore(goal.targetValue, ach.actualValue, goal.uomType as any, goal.targetDate ? goal.targetDate.toISOString() : null, ach.actualDate ? ach.actualDate.toISOString() : null)
+          const score = computeScore({
+            targetValue: goal.targetValue,
+            actualValue: ach.actualValue,
+            uomType: goal.uomType as any,
+            targetDate: goal.targetDate,
+            actualDate: ach.actualDate
+          }) || 0
           totalWeightedScore += (score * goal.weightage)
           totalWeightage += goal.weightage
         }
@@ -99,7 +105,13 @@ export async function GET(req: NextRequest) {
         emp.goals.forEach(goal => {
           const ach = goal.achievements.find(a => a.quarter === q)
           if (ach && ach.actualValue !== null) {
-            const score = computeScore(goal.targetValue, ach.actualValue, goal.uomType as any, goal.targetDate ? goal.targetDate.toISOString() : null, ach.actualDate ? ach.actualDate.toISOString() : null)
+            const score = computeScore({
+              targetValue: goal.targetValue,
+              actualValue: ach.actualValue,
+              uomType: goal.uomType as any,
+              targetDate: goal.targetDate,
+              actualDate: ach.actualDate
+            }) || 0
             tScore += (score * goal.weightage)
             tWeight += goal.weightage
           }

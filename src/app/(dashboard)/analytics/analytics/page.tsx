@@ -63,7 +63,7 @@ export default function AnalyticsDashboardPage() {
                   <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
                   <Tooltip 
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
-                    formatter={(value: number) => [`${value}%`, undefined]}
+                    formatter={(value: any) => [`${value}%`, 'Average']}
                   />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '20px' }} />
                   <ReferenceLine y={100} stroke="#9ca3af" strokeDasharray="3 3" label={{ position: 'top', value: 'Target', fill: '#9ca3af', fontSize: 12 }} />

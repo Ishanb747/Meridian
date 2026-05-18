@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, X, Info } from 'lucide-react'
+import { Download } from 'lucide-react'
 
 interface EmployeeCompletion {
   id: string
